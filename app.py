@@ -25,30 +25,6 @@ def hello():
 		return "Hello World!"
 
 
-@app.route('/api/<state>')
-def api(state):
-	'''
-	Getting data from http://coronavirusapi.com/
-	'''
-	response = requests.get('http://coronavirusapi.com/getTimeSeries/' + state)
-	if response:
-		print('Response from api: ', response)
-		# Data returned from api in 'str' format
-		text_response = json.dumps(response.text)
-		print('Response text from api: ', text_response)
-		if(text_response == '"Please use a 2 letter state abbreviation"'):
-			return 'Invalid State'
-		else:
-			# Tokenize the data
-			all_data = response.text.split('\n')
-			print('All data: ', all_data)
-			return 'State: ' + state
-	else:
-		print('Error occurred!')
-		return "Error"
-
-
-
 @app.route('/<name>')
 def hello_name(name):
     return "Hello {}!".format(name)
