@@ -27,5 +27,5 @@ def create_app(test_config=None):
 	app.register_blueprint(main.bp)
 	return app
 
-if __name__ == '__main__':
-    create_app().run()
+
+create_app().run()
