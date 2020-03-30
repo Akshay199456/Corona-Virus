@@ -44,9 +44,19 @@ def api(state):
 			# Tokenize the data
 			all_data = response.text.split('\n')
 			print('All data: ', all_data)
+			# Get the column names
+			column_names = all_data[0].split(',')
+			# Get the actual data
+			datapoints = []
+			for element in all_data[1:]:
+				datapoints.append([0 if x=='' else int(x) for x in element.split(',')])
 
-			df = pd.DataFrame({"Name": ["Braund, Mr. Owen Harris","Allen, Mr. William Henry","Bonnell, Miss. Elizabeth"],"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})
-			print('Pandas df: ', df)
+			print('Column names: ', column_names)
+			print('Data points: ', datapoints)
+
+
+			# df = pd.DataFrame({"Name": ["Braund, Mr. Owen Harris","Allen, Mr. William Henry","Bonnell, Miss. Elizabeth"],"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})
+			# print('Pandas df: ', df)
 			return 'State: ' + state
 	else:
 		print('Error occurred!')
