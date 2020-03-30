@@ -1,69 +1,31 @@
 import os
-import json
-import requests
-import pandas as pd
+
+import main
 
 from flask import Flask
-from flask import jsonify, make_response
 
 
-app = Flask(__name__)
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-app.config.from_object(os.environ['APP_SETTINGS'])
-
-print(os.environ['APP_SETTINGS'])
-
-@app.route('/')
-def home():
-	return 'Hello World!'
-
-@app.route('/states')
-def hello():
-	response = requests.get('https://covidtracking.com/api/states')
-	if response:
-		print('Response: ', response)
-		# json.loads takes in a string and returns a json object
-		json_object = json.loads(response.text)
-		# The jsonify() function in flask returns a flask.Response() object 
-		# that already has the appropriate content-type header 'application/json' 
-		# for use with json responses. Whereas, the json.dumps() method will just return 
-		# an encoded string, which would require manually adding the MIME type header.
-		return jsonify(json_object)
+def create_app(test_config=None):
+	# create and configure the app
+	app = Flask(__name__, instance_relative_config=True)
+	app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+	app.config.from_object(os.environ['APP_SETTINGS'])
+	print(os.environ['APP_SETTINGS'])
+	if test_config is None:
+		# load the instance config, if it exists, when not testing
+		app.config.from_pyfile('config.py', silent=True)
 	else:
-		print('Error occurred!')
-		return "Error"
+		# load the test config if passed in
+		app.config.from_mapping(test_config)
 
+	# ensure the instance folder exists
+	try:
+		os.makedirs(app.instance_path)
+	except OSError:
+		pass
 
-@app.route('/api/<state>')
-def api(state):
-	'''
-	Getting data from http://coronavirusapi.com/
-	'''
-	response = requests.get('http://coronavirusapi.com/getTimeSeries/' + state)
-	if response:
-		print('Response from api: ', response)
-		# Data returned from api in 'str' format
-		text_response = json.dumps(response.text)
-		print('Response text from api: ', text_response)
-		if(text_response == '"Please use a 2 letter state abbreviation"'):
-			return 'Invalid State'
-		else:
-			# Tokenize the data
-			all_data = response.text.split('\n')
-			print('All data: ', all_data)
-
-			df = pd.DataFrame({"Name": ["Braund, Mr. Owen Harris","Allen, Mr. William Henry","Bonnell, Miss. Elizabeth"],"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})
-			print('Pandas df: ', df)
-			return 'State: ' + state
-	else:
-		print('Error occurred!')
-		return "Error"
-
-
-
-@app.route('/<name>')
-def hello_name(name):
-    return "Hello {}!".format(name)
+	app.register_blueprint(main.bp)
+	return app
 
 if __name__ == '__main__':
-    app.run()
+    create_app().run()
